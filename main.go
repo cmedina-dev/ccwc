@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"os"
 )
@@ -13,10 +13,18 @@ const (
 )
 
 func main() {
-	content, err := io.ReadAll(os.Stdin)
-	if err == nil {
-		handleStdInput(os.Args, content)
+	fileInfo, err := os.Stdin.Stat()
+	assertNoError(err)
+	if (fileInfo.Mode() & os.ModeCharDevice) == 0 {
+		scanner := bufio.NewScanner(os.Stdin)
+		var data []byte
+		for scanner.Scan() {
+			data = append(data, scanner.Bytes()...)
+			data = append(data, '\n')
+		}
+		handleStdInput(os.Args, data)
 	} else {
+		fmt.Println("Stdin not detected")
 		switch len(os.Args) {
 		case flag:
 			handleFlagInput(os.Args)
