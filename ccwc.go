@@ -36,3 +36,9 @@ func CountWords(file []byte) int {
 	wordSlice := strings.FieldsFunc(words, isWordSeparator)
 	return len(wordSlice)
 }
+
+func CountCharacters(file []byte) int {
+	words := string(file)
+	charSlice := strings.Split(words, "")
+	return len(charSlice)
+}

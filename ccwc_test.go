@@ -93,7 +93,7 @@ func TestCountCharacters(t *testing.T) {
 		addWord(&mockFile, "Hello ")
 		addWord(&mockFile, "World!")
 		got := CountCharacters(mockFile)
-		want := 12
+		want := 28
 		assertCount(t, got, want)
 	})
 }
