@@ -41,7 +41,7 @@ func TestCountLines(t *testing.T) {
 			new(bytes.Buffer),
 			8,
 		})
-		addLines(&mockFile, 4, '\n')
+		addChar(&mockFile, 4, '\n')
 		got := CountLines(mockFile)
 		want := 4
 		assertCount(t, got, want)
@@ -51,7 +51,7 @@ func TestCountLines(t *testing.T) {
 			new(bytes.Buffer),
 			8,
 		})
-		addLines(&mockFile, 2, '\r')
+		addChar(&mockFile, 2, '\r')
 		got := CountLines(mockFile)
 		want := 2
 		assertCount(t, got, want)
@@ -61,18 +61,52 @@ func TestCountLines(t *testing.T) {
 			new(bytes.Buffer),
 			8,
 		})
-		addLines(&mockFile, 1, '\r')
-		addLines(&mockFile, 1, '\n')
-		addLines(&mockFile, 1, '\r')
+		addChar(&mockFile, 1, '\r')
+		addChar(&mockFile, 1, '\n')
+		addChar(&mockFile, 1, '\r')
 		got := CountLines(mockFile)
 		want := 2
 		assertCount(t, got, want)
 	})
 }
 
-func addLines(file *[]byte, lineCount int, lineBreak byte) {
+func TestCountWords(t *testing.T) {
+	t.Run("counts the number of words in a file", func(t *testing.T) {
+		mockFile := createMockFile(File{
+			new(bytes.Buffer),
+			16,
+		})
+		addWord(&mockFile, "Hello ")
+		addWord(&mockFile, "World!")
+		got := CountWords(mockFile)
+		want := 2
+		assertCount(t, got, want)
+	})
+}
+
+func TestCountCharacters(t *testing.T) {
+	t.Run("counts the number of characters in a file", func(t *testing.T) {
+		mockFile := createMockFile(File{
+			new(bytes.Buffer),
+			16,
+		})
+		addWord(&mockFile, "Hello ")
+		addWord(&mockFile, "World!")
+		got := CountCharacters(mockFile)
+		want := 12
+		assertCount(t, got, want)
+	})
+}
+
+func addChar(file *[]byte, lineCount int, lineBreak byte) {
 	for i := 0; i < lineCount; i++ {
 		*file = append(*file, lineBreak)
+	}
+}
+
+func addWord(file *[]byte, word string) {
+	for i := 0; i < len(word); i++ {
+		*file = append(*file, word[i])
 	}
 }
 

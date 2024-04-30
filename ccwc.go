@@ -1,5 +1,10 @@
 package main
 
+import (
+	"strings"
+	"unicode"
+)
+
 func CountBytes(file []byte) int {
 	return len(file)
 }
@@ -21,4 +26,13 @@ func CountLines(file []byte) (lineCount int) {
 		}
 	}
 	return
+}
+
+func CountWords(file []byte) int {
+	words := string(file)
+	isWordSeparator := func(r rune) bool {
+		return unicode.IsSpace(r) || r == '\n'
+	}
+	wordSlice := strings.FieldsFunc(words, isWordSeparator)
+	return len(wordSlice)
 }

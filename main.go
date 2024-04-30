@@ -1,38 +1,37 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
 )
 
 func main() {
-	countTypes := flag.NewFlagSet("countTypes", flag.ExitOnError)
-	countTypes.Bool("c", false, "prints the file size in bytes")
-	countTypes.Bool("l", false, "prints the number of lines in the file")
-
 	if len(os.Args) != 3 {
 		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
-		fmt.Fprintf(os.Stdout, "Got %d args\n", len(os.Args))
+		_, err := fmt.Fprintf(os.Stdout, "Got %d args\n", len(os.Args))
+		assertNoError(err)
 		fmt.Println(os.Args)
 		os.Exit(1)
 	}
 
-	err := countTypes.Parse(os.Args[2:])
-	assertNoError(err)
-
-	fileName := countTypes.Arg(0)
+	flag := os.Args[1]
+	fileName := os.Args[2]
 	dat, err := os.ReadFile(fileName)
 	assertNoError(err)
 
-	switch os.Args[1] {
+	switch flag {
 	case "-c":
 		fileSize := CountBytes(dat)
 		fmt.Printf("%d %s\n", fileSize, fileName)
 	case "-l":
 		lineCount := CountLines(dat)
 		fmt.Printf("%d %s\n", lineCount, fileName)
+	case "-w":
+		wordCount := CountWords(dat)
+		fmt.Printf("%d %s\n", wordCount, fileName)
+	default:
+		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
 	}
 }
 
