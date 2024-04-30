@@ -15,12 +15,8 @@ func CountLines(file []byte) (lineCount int) {
 			lineCount++
 		}
 		if file[i] == '\r' {
-			if i+1 < len(file) {
-				if file[i+1] == '\n' {
-					lineCount++
-					i++
-					continue
-				}
+			if i+1 < len(file) && file[i+1] == '\n' {
+				continue
 			}
 			lineCount++
 		}
