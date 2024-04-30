@@ -33,8 +33,8 @@ func main() {
 }
 
 func handleStdInput(args []string, dat []byte) {
-	flag := args[1]
-	switch flag {
+	flagType := args[1]
+	switch flagType {
 	case "-c":
 		fileSize := CountBytes(dat)
 		fmt.Printf("%d\n", fileSize)
@@ -64,12 +64,12 @@ func handleNoFlagInput(args []string) {
 }
 
 func handleFlagInput(args []string) {
-	flag := args[1]
+	flagType := args[1]
 	fileName := args[2]
 	dat, err := os.ReadFile(fileName)
 	assertNoError(err)
 
-	switch flag {
+	switch flagType {
 	case "-c":
 		fileSize := CountBytes(dat)
 		fmt.Printf("%d %s\n", fileSize, fileName)
