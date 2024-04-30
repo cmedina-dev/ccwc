@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -12,17 +13,42 @@ const (
 )
 
 func main() {
-	switch len(os.Args) {
-	case flag:
-		handleFlagInput(os.Args)
-	case noFlag:
-		handleNoFlagInput(os.Args)
+	content, err := io.ReadAll(os.Stdin)
+	if err == nil {
+		handleStdInput(os.Args, content)
+	} else {
+		switch len(os.Args) {
+		case flag:
+			handleFlagInput(os.Args)
+		case noFlag:
+			handleNoFlagInput(os.Args)
+		default:
+			fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
+			_, err := fmt.Fprintf(os.Stdout, "Got %d args\n", len(os.Args))
+			assertNoError(err)
+			fmt.Println(os.Args)
+			os.Exit(1)
+		}
+	}
+}
+
+func handleStdInput(args []string, dat []byte) {
+	flag := args[1]
+	switch flag {
+	case "-c":
+		fileSize := CountBytes(dat)
+		fmt.Printf("%d\n", fileSize)
+	case "-l":
+		lineCount := CountLines(dat)
+		fmt.Printf("%d\n", lineCount)
+	case "-w":
+		wordCount := CountWords(dat)
+		fmt.Printf("%d\n", wordCount)
+	case "-m":
+		characterCount := CountCharacters(dat)
+		fmt.Printf("%d\n", characterCount)
 	default:
 		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
-		_, err := fmt.Fprintf(os.Stdout, "Got %d args\n", len(os.Args))
-		assertNoError(err)
-		fmt.Println(os.Args)
-		os.Exit(1)
 	}
 }
 
