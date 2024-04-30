@@ -24,7 +24,6 @@ func main() {
 		}
 		handleStdInput(os.Args, data)
 	} else {
-		fmt.Println("Stdin not detected")
 		switch len(os.Args) {
 		case flag:
 			handleFlagInput(os.Args)
