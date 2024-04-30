@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -13,8 +12,17 @@ const (
 )
 
 func main() {
+	err := run(os.Args)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func run(args []string) error {
 	fileInfo, err := os.Stdin.Stat()
-	assertNoError(err)
+	if err != nil {
+		return err
+	}
 	if (fileInfo.Mode() & os.ModeCharDevice) == 0 {
 		scanner := bufio.NewScanner(os.Stdin)
 		var data []byte
@@ -22,24 +30,36 @@ func main() {
 			data = append(data, scanner.Bytes()...)
 			data = append(data, '\n')
 		}
-		handleStdInput(os.Args, data)
+		err := handleStdInput(args, data)
+		if err != nil {
+			return err
+		}
 	} else {
-		switch len(os.Args) {
+		switch len(args) {
 		case flag:
-			handleFlagInput(os.Args)
+			err := handleFlagInput(args)
+			if err != nil {
+				return err
+			}
 		case noFlag:
-			handleNoFlagInput(os.Args)
+			err := handleNoFlagInput(args)
+			if err != nil {
+				return err
+			}
 		default:
 			fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
-			_, err := fmt.Fprintf(os.Stdout, "Got %d args\n", len(os.Args))
-			assertNoError(err)
-			fmt.Println(os.Args)
+			_, err := fmt.Fprintf(os.Stdout, "Got %d args\n", len(args))
+			if err != nil {
+				return err
+			}
+			fmt.Println(args)
 			os.Exit(1)
 		}
 	}
+	return nil
 }
 
-func handleStdInput(args []string, dat []byte) {
+func handleStdInput(args []string, dat []byte) error {
 	flagType := args[1]
 	switch flagType {
 	case "-c":
@@ -57,24 +77,32 @@ func handleStdInput(args []string, dat []byte) {
 	default:
 		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
 	}
+	return nil
 }
 
-func handleNoFlagInput(args []string) {
+func handleNoFlagInput(args []string) error {
 	fileName := args[1]
 	dat, err := os.ReadFile(fileName)
-	assertNoError(err)
+	if err != nil {
+		return err
+	}
 	fileSize := CountBytes(dat)
 	lineCount := CountLines(dat)
 	wordCount := CountWords(dat)
 	_, err = fmt.Fprintf(os.Stdout, "%d %d %d %s\n", lineCount, wordCount, fileSize, fileName)
-	assertNoError(err)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func handleFlagInput(args []string) {
+func handleFlagInput(args []string) error {
 	flagType := args[1]
 	fileName := args[2]
 	dat, err := os.ReadFile(fileName)
-	assertNoError(err)
+	if err != nil {
+		return err
+	}
 
 	switch flagType {
 	case "-c":
@@ -92,10 +120,5 @@ func handleFlagInput(args []string) {
 	default:
 		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
 	}
-}
-
-func assertNoError(err error) {
-	if err != nil {
-		log.Fatalln(err)
-	}
+	return nil
 }
