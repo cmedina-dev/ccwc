@@ -77,6 +77,7 @@ func handleStdInput(args []string, dat []byte) error {
 		fmt.Printf("%d\n", characterCount)
 	default:
 		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
+		return errors.New("flag: invalid option supplied")
 	}
 	return nil
 }

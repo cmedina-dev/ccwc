@@ -16,13 +16,52 @@ const (
 )
 
 func TestHandleStdInput(t *testing.T) {
-	t.Run("accepts piped input", func(t *testing.T) {
-		var buffer []byte
-		buffer = append(buffer, "Hello "...)
-		buffer = append(buffer, "World!"...)
-		args := []string{path, "-c"}
+	testCases := []struct {
+		name string
+		path string
+		flag string
+		file string
+	}{
+		{
+			"accepts the flag to count piped bytes",
+			path,
+			"-c",
+			file,
+		},
+		{
+			"accepts the flag to count piped words",
+			path,
+			"-w",
+			file,
+		},
+		{
+			"accepts the flag to count piped lines",
+			path,
+			"-l",
+			file,
+		},
+		{
+			"accepts the flag to count piped characters",
+			path,
+			"-m",
+			file,
+		},
+	}
+	var buffer []byte
+	buffer = append(buffer, "Hello "...)
+	buffer = append(buffer, "World!"...)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			args := []string{path, testCase.flag}
+			err := handleStdInput(args, buffer)
+			assertNoError(t, err)
+		})
+	}
+	t.Run("returns error when invalid flag is supplied", func(t *testing.T) {
+		args := []string{path, "-q"}
 		err := handleStdInput(args, buffer)
-		assertNoError(t, err)
+		assertError(t, err)
 	})
 }
 
