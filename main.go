@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 )
@@ -119,6 +120,7 @@ func handleFlagInput(args []string) error {
 		fmt.Printf("%d %s\n", characterCount, fileName)
 	default:
 		fmt.Println("Usage: ccwc [OPTIONS] FILENAME")
+		return errors.New("flag: invalid option supplied")
 	}
 	return nil
 }
