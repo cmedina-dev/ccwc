@@ -5,15 +5,62 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M) {
-	code := m.Run()
-	os.Exit(code)
-}
-
 const (
 	path = "./"
 	file = "test.txt"
 )
+
+func TestRun(t *testing.T) {
+	t.Run("returns error when Stdin is invalid", func(t *testing.T) {
+		writer, _, _ := os.Pipe()
+		err := writer.Close()
+		assertNoError(t, err)
+		oldStdin := os.Stdin
+		defer func() { os.Stdin = oldStdin }()
+		os.Stdin = writer
+		args := []string{path, "-m", file}
+		err = run(args)
+		assertError(t, err)
+	})
+	t.Run("accepts piped non-interactive input", func(t *testing.T) {
+		reader, writer, err := os.Pipe()
+		assertNoError(t, err)
+		_, err = writer.Write([]byte("Hello World!\n\n\n"))
+		assertNoError(t, err)
+		err = writer.Close()
+		assertNoError(t, err)
+		oldStdin := os.Stdin
+		defer func() {
+			os.Stdin = oldStdin
+			err = reader.Close()
+			assertNoError(t, err)
+		}()
+		os.Stdin = reader
+		args := []string{path, "-c"}
+		err = run(args)
+		assertNoError(t, err)
+	})
+	t.Run("accepts input with a flag", func(t *testing.T) {
+		args := []string{path, "-c", file}
+		err := run(args)
+		assertNoError(t, err)
+	})
+	t.Run("accepts input without a flag", func(t *testing.T) {
+		args := []string{path, file}
+		err := run(args)
+		assertNoError(t, err)
+	})
+	t.Run("rejects input with an unknown flag", func(t *testing.T) {
+		args := []string{path, "-q", file}
+		err := run(args)
+		assertError(t, err)
+	})
+	t.Run("rejects input with an invalid number of arguments", func(t *testing.T) {
+		args := []string{path, "-q", "-c", "-l", file}
+		err := run(args)
+		assertError(t, err)
+	})
+}
 
 func TestHandleStdInput(t *testing.T) {
 	testCases := []struct {
@@ -77,18 +124,14 @@ func TestHandleNoFlagInput(t *testing.T) {
 		assertError(t, err)
 	})
 	t.Run("returns error when writing to stdout fails", func(t *testing.T) {
-		_, w, _ := os.Pipe()
-		err := w.Close()
-		if err != nil {
-			t.Fatalf("Failed to close writer: %v", err)
-		}
-
+		_, writer, _ := os.Pipe()
+		err := writer.Close()
+		assertNoError(t, err)
 		originalStdout := os.Stdout
 		defer func() {
 			os.Stdout = originalStdout
 		}()
-		os.Stdout = w
-
+		os.Stdout = writer
 		args := []string{path, file}
 		err = handleNoFlagInput(args)
 		assertError(t, err)
@@ -147,12 +190,14 @@ func TestHandleFlagInput(t *testing.T) {
 }
 
 func assertError(t *testing.T, err error) {
+	t.Helper()
 	if err == nil {
 		t.Errorf("Expected an error, but got nil")
 	}
 }
 
 func assertNoError(t *testing.T, err error) {
+	t.Helper()
 	if err != nil {
 		t.Error(err)
 	}

@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 )
 
 const (
@@ -26,11 +28,14 @@ func run(args []string) error {
 	}
 	if (fileInfo.Mode() & os.ModeCharDevice) == 0 {
 		scanner := bufio.NewScanner(os.Stdin)
-		var data []byte
+		var buffer bytes.Buffer
+		var lineBreak []byte
+		setLinebreak(&lineBreak)
 		for scanner.Scan() {
-			data = append(data, scanner.Bytes()...)
-			data = append(data, '\n')
+			buffer.Write(scanner.Bytes())
+			buffer.Write([]byte("\r\n"))
 		}
+		data := buffer.Bytes()
 		err := handleStdInput(args, data)
 		if err != nil {
 			return err
@@ -53,8 +58,7 @@ func run(args []string) error {
 			if err != nil {
 				return err
 			}
-			fmt.Println(args)
-			os.Exit(1)
+			return errors.New("flag: invalid option supplied")
 		}
 	}
 	return nil
@@ -124,4 +128,15 @@ func handleFlagInput(args []string) error {
 		return errors.New("flag: invalid option supplied")
 	}
 	return nil
+}
+
+func setLinebreak(lineBreak *[]byte) {
+	var lineEnd string
+	switch runtime.GOOS {
+	case "windows":
+		lineEnd = "\r\n"
+	default:
+		lineEnd = "\n"
+	}
+	*lineBreak = []byte(lineEnd)
 }
